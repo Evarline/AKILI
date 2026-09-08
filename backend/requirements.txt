@@ -1,0 +1,39 @@
+# AKILI backend dependencies.
+#
+# Direct dependencies only, pinned to the versions verified on this machine.
+# Transitive packages (starlette, pydantic, python-dotenv, anyio, greenlet,
+# mako, ...) are resolved by pip and deliberately not listed here.
+#
+# Add packages only in the phase that needs them. Not installed yet, by design:
+# voice libraries, Redis clients, authentication packages, background-task
+# frameworks, additional LLM SDKs.
+
+# --- Web (Phase 3) ---
+fastapi==0.141.1
+uvicorn[standard]==0.52.4
+pydantic-settings==2.15.0
+
+# --- Database (Phase 4) ---
+# Async PostgreSQL via SQLAlchemy 2.x + asyncpg; Alembic for migrations.
+sqlalchemy[asyncio]==2.0.52
+asyncpg==0.31.0
+alembic==1.19.2
+
+# --- Runtime LLM (Phase 5) ---
+# One provider SDK, behind app.llm.base. The 1.x SDK is built on httpx2, which
+# the test client already uses — no second HTTP stack.
+anthropic==1.4.0
+
+# --- Binance Agentic MCP / OAuth (Phase 6) ---
+# The official MCP Python SDK, also built on httpx2. Phase 6.2 uses only its
+# OAuth building blocks (metadata models, discovery URL rules, PKCE); the MCP
+# client itself is used from Phase 6.3. `cryptography` seals per-request OAuth
+# secrets (the PKCE verifier now, tokens later) at rest with a Fernet key.
+mcp==2.1.1
+cryptography==50.0.1
+
+# --- Testing (Phase 3) ---
+# starlette's TestClient needs an HTTP client. It deprecates httpx in favour of
+# httpx2, so we use httpx2 and keep the test run warning-free.
+pytest==9.1.1
+httpx2==2.12.0

@@ -1,0 +1,13 @@
+# Tooling configuration for the AKILI repository.
+#
+# This is NOT a Python package definition. The file exists so that pytest can
+# import `app.*` without anyone having to set PYTHONPATH by hand.
+#
+# `backend/` is the Python root: the server is started from inside backend/ as
+# `uvicorn app.main:app`, so `app` must be the top-level package. Tests live at
+# the repository root, so pytest is pointed at backend/ explicitly.
+# Dependencies live in backend/requirements.txt.
+
+[tool.pytest.ini_options]
+pythonpath = ["backend"]
+testpaths = ["tests"]

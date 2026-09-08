@@ -1,0 +1,220 @@
+/* The Binance and "How AKILI works" views, in the centre column. */
+
+.view {
+  max-width: var(--content-max);
+  margin: 0 auto;
+  padding: var(--space-6) var(--space-5) var(--space-8);
+  overflow-y: auto;
+  height: 100%;
+}
+
+.viewHeader {
+  margin-bottom: var(--space-6);
+}
+
+.viewTitle {
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.024em;
+}
+
+.viewLead {
+  margin-top: var(--space-2);
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+  max-width: 56ch;
+}
+
+.connectCard {
+  padding-top: var(--space-5);
+}
+
+.section {
+  margin-top: var(--space-8);
+}
+
+.sectionTitle {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.sectionLead {
+  margin-top: var(--space-3);
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+
+.sectionNote {
+  margin-top: var(--space-4);
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--text-muted);
+}
+
+/* ---- Request path ---- */
+
+.path {
+  list-style: none;
+  margin: var(--space-4) 0 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-2);
+}
+
+.pathStep {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.pathIcon {
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radius-sm);
+  display: grid;
+  place-items: center;
+  background: var(--surface-high);
+  color: var(--text-secondary);
+}
+
+.pathText {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.pathLabel {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.pathDetail {
+  font-size: 11.5px;
+  color: var(--text-muted);
+}
+
+.pathArrow {
+  color: var(--text-faint);
+}
+
+/* ---- Trust classes ---- */
+
+.trustList {
+  margin: var(--space-4) 0 0;
+  display: grid;
+  gap: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--surface);
+}
+
+.trustRow {
+  display: grid;
+  grid-template-columns: 190px 1fr;
+  gap: var(--space-4);
+  padding: var(--space-3) var(--space-4);
+}
+
+.trustRow + .trustRow {
+  border-top: 1px solid var(--divider);
+}
+
+.trustName {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.02em;
+  color: var(--text-secondary);
+}
+
+.trustMeaning {
+  margin: 0;
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--text-muted);
+}
+
+/* ---- Limits ---- */
+
+.limits {
+  margin: var(--space-4) 0 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: var(--space-3);
+}
+
+.limits li {
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--text-muted);
+}
+
+.limits strong {
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+/* ---- AKILI account vs Binance connection ---- */
+
+.distinction {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+}
+
+.distinctionItem {
+  padding: var(--space-4);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.distinctionTitle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.distinctionIcon {
+  color: var(--text-muted);
+}
+
+.distinctionBody {
+  margin-top: var(--space-2);
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--text-muted);
+}
+
+@media (max-width: 760px) {
+  .view {
+    padding: var(--space-5) var(--space-4) var(--space-6);
+  }
+
+  .distinction {
+    grid-template-columns: 1fr;
+  }
+
+  .trustRow {
+    grid-template-columns: 1fr;
+    gap: var(--space-1);
+  }
+}

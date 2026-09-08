@@ -1,0 +1,546 @@
+/*
+ * The application shell: header, sidebar, centre, context rail.
+ *
+ * Three columns on a wide screen, collapsing deliberately rather than
+ * proportionally: the rail is the first to go, then the sidebar becomes an
+ * overlay drawer. The conversation is never the thing that gets squeezed.
+ */
+
+.shell {
+  display: grid;
+  grid-template-rows: var(--header-height) 1fr;
+  height: 100%;
+  min-height: 0;
+}
+
+/* ---- Header ---- */
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: 0 var(--space-5);
+  border-bottom: 1px solid #2f2e2e;
+  background: var(--bg);
+}
+
+.sidebarToggle {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-secondary);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.brandText {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.wordmark {
+  font-size: 21px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+.tagline {
+  font-size: 12.5px;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.headerRight {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.offline {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  color: var(--down-text);
+}
+
+.offlineDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--down);
+}
+
+/* ---- Body grid ---- */
+
+.body {
+  display: grid;
+  grid-template-columns: var(--sidebar-width) minmax(0, 1fr) var(--rail-width);
+  min-height: 0;
+}
+
+.main {
+  min-width: 0;
+  min-height: 0;
+  border-left: 1px solid var(--divider);
+  border-right: 1px solid var(--divider);
+}
+
+/* ---- Sidebar ---- */
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  padding: var(--space-4);
+  overflow-y: auto;
+  background: var(--bg);
+}
+
+.newChat {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: var(--space-3);
+  padding: 12px var(--space-4);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--surface-high);
+  transition: background 120ms ease, border-color 120ms ease;
+}
+
+.newChat:hover {
+  background: #1f1f1f;
+  border-color: var(--border-strong);
+}
+
+.newChatIcon {
+  color: var(--text);
+  display: grid;
+  place-items: center;
+}
+
+.newChatLabel {
+  text-align: left;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.newChatPlus {
+  color: var(--text-secondary);
+}
+
+/* ---- Nav ---- */
+
+.nav {
+  margin: 0;
+}
+
+.navList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.navItem {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  padding: 9px var(--space-3);
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  font-size: 13.5px;
+  color: var(--text-secondary);
+  text-align: left;
+  transition: background 120ms ease, color 120ms ease;
+}
+
+.navItem:hover {
+  background: var(--surface);
+  color: var(--text);
+}
+
+.navItemActive {
+  background: var(--surface-raised);
+  border-color: var(--border);
+  color: var(--text);
+  font-weight: 500;
+}
+
+.navIcon {
+  flex: none;
+  color: var(--text-muted);
+}
+
+.navBinanceIcon {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+  flex: none;
+}
+
+.navItemActive .navIcon {
+  color: var(--text-secondary);
+}
+
+/* ---- Conversations ---- */
+
+.conversations {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.sectionLabel {
+  padding: 0 var(--space-2);
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+.emptyList {
+  padding: var(--space-3) var(--space-2);
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--text-muted);
+}
+
+.conversationList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.conversationItem {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  padding: 10px var(--space-3);
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  background: transparent;
+  text-align: left;
+  transition: background 120ms ease;
+}
+
+.conversationItem:hover {
+  background: var(--surface);
+}
+
+.conversationItemActive {
+  background: var(--surface-raised);
+  border-color: var(--border);
+}
+
+.conversationIcon {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  flex: none;
+  background: var(--surface-high);
+  color: var(--text-secondary);
+}
+
+.conversationText {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.conversationTitle {
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.conversationMeta {
+  font-size: 11.5px;
+  color: var(--text-muted);
+}
+
+.conversationTime {
+  font-size: 11px;
+  color: var(--text-faint);
+  white-space: nowrap;
+}
+
+.listNote {
+  padding: var(--space-2);
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--text-faint);
+}
+
+/* ---- Security card ---- */
+
+.security {
+  margin-top: auto;
+  padding: var(--space-4);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.securityTitle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.securityIcon {
+  color: var(--text-secondary);
+}
+
+.securityBody {
+  margin-top: var(--space-2);
+  font-size: 11.5px;
+  line-height: 1.6;
+  color: var(--text-muted);
+}
+
+/* ---- Context rail ---- */
+
+.rail {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-4);
+  overflow-y: auto;
+  background: var(--bg);
+}
+
+.reading {
+  padding: 0 var(--space-5) var(--space-5);
+}
+
+.readingHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.readingPair {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.readingChange {
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.readingChangeUp {
+  color: var(--up-text);
+}
+
+.readingChangeDown {
+  color: var(--down-text);
+}
+
+.readingPrice {
+  margin-top: var(--space-2);
+  font-size: 26px;
+  font-weight: 600;
+  letter-spacing: -0.026em;
+}
+
+.readingNoPrice {
+  margin-top: var(--space-2);
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.readingMeta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  margin-top: var(--space-3);
+  font-size: 11.5px;
+  color: var(--text-muted);
+}
+
+.readingNote {
+  margin-top: var(--space-3);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--divider);
+  font-size: 11px;
+  line-height: 1.55;
+  color: var(--text-faint);
+}
+
+/* ---- Agent loop ---- */
+
+.loop {
+  list-style: none;
+  margin: 0;
+  padding: 0 var(--space-5) var(--space-3);
+  display: grid;
+  gap: var(--space-3);
+  counter-reset: none;
+}
+
+.loopStep {
+  display: grid;
+  grid-template-columns: 22px 1fr;
+  gap: var(--space-3);
+  align-items: start;
+}
+
+.loopIndex {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  flex: none;
+  border: 1px solid var(--border);
+  background: var(--surface-high);
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--text-faint);
+}
+
+.loopIndexDone {
+  background: color-mix(in srgb, var(--up) 16%, var(--surface-high));
+  border-color: color-mix(in srgb, var(--up) 38%, transparent);
+  color: var(--up);
+}
+
+.loopText {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.loopStage {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 12.5px;
+  font-weight: 500;
+}
+
+.loopStepTodo .loopStage {
+  color: var(--text-muted);
+}
+
+.loopBadge {
+  font-size: 9.5px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  padding: 1px 6px;
+}
+
+.loopDetail {
+  font-size: 11.5px;
+  color: var(--text-faint);
+}
+
+.loopFooter {
+  padding: var(--space-3) var(--space-5) var(--space-4);
+  border-top: 1px solid var(--divider);
+  font-size: 11px;
+  line-height: 1.55;
+  color: var(--text-muted);
+}
+
+/* ---- Responsive ---- */
+
+/* Wide enough for the sidebar to be a permanent column: no toggle needed. */
+@media (min-width: 901px) {
+  .sidebarToggle {
+    display: none;
+  }
+}
+
+/* The rail is context, so it is the first thing to go. */
+@media (max-width: 1240px) {
+  .body {
+    grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
+  }
+
+  .rail {
+    display: none;
+  }
+
+  .main {
+    border-right: 0;
+  }
+}
+
+/* Below this, the sidebar becomes an overlay drawer. */
+@media (max-width: 900px) {
+  .body {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .tagline {
+    display: none;
+  }
+
+  .sidebar {
+    position: fixed;
+    inset: var(--header-height) auto 0 0;
+    z-index: 30;
+    width: min(var(--sidebar-width), 86vw);
+    border-right: 1px solid var(--border);
+    box-shadow: var(--shadow-raised);
+    transform: translateX(-100%);
+    visibility: hidden;
+    transition: transform 180ms ease, visibility 180ms ease;
+  }
+
+  .sidebarOpen {
+    transform: translateX(0);
+    visibility: visible;
+  }
+
+  .main {
+    border-left: 0;
+  }
+}
+
+@media (max-width: 560px) {
+  .header {
+    padding: 0 var(--space-4);
+    gap: var(--space-3);
+  }
+
+  .wordmark {
+    font-size: 18px;
+  }
+}

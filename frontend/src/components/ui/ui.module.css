@@ -1,0 +1,191 @@
+/* Shared primitives: cards, pills, status text, and the empty/unavailable
+   panels AKILI shows wherever the backend has nothing to give yet. */
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+}
+
+.railCard {
+  background: var(--surface-inset);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-lg);
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-5);
+}
+
+.cardTitle {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.divider {
+  height: 1px;
+  background: var(--divider);
+  border: 0;
+  margin: 0;
+}
+
+/* ---- Pill / chip ---- */
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  background: var(--surface-high);
+  border: 1px solid transparent;
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.pillEmphasis {
+  color: var(--text);
+  border-color: var(--border);
+}
+
+.pillWarning {
+  color: var(--warn);
+  border-color: color-mix(in srgb, var(--warn) 32%, transparent);
+  background: color-mix(in srgb, var(--warn) 10%, var(--surface-high));
+}
+
+/* ---- Status dot: always paired with text, never colour alone ---- */
+
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex: none;
+  background: var(--text-faint);
+}
+
+.dotUp {
+  background: var(--up);
+}
+
+.dotDown {
+  background: var(--down);
+}
+
+.dotWarn {
+  background: var(--warn);
+}
+
+.dotIdle {
+  background: var(--text-faint);
+}
+
+/* ---- Buttons ---- */
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: 9px 14px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--surface-high);
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 500;
+  transition: background 120ms ease, border-color 120ms ease;
+}
+
+.button:hover:not(:disabled) {
+  background: #1f1f1f;
+  border-color: var(--border-strong);
+}
+
+.button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.buttonPrimary {
+  background: #ffffff;
+  border-color: #ffffff;
+  color: var(--text-on-light);
+  font-weight: 600;
+}
+
+.buttonPrimary:hover:not(:disabled) {
+  background: #ececec;
+  border-color: #ececec;
+}
+
+.buttonBlock {
+  width: 100%;
+}
+
+/* ---- Empty / unavailable panels ----
+   Used everywhere the backend exposes nothing. They say so in words. */
+
+.notice {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-4) var(--space-5) var(--space-5);
+  color: var(--text-muted);
+  font-size: 12.5px;
+  line-height: 1.55;
+}
+
+.noticeTitle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.noticeBody {
+  color: var(--text-muted);
+}
+
+.noticeCode {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  color: var(--text-secondary);
+  background: var(--surface-high);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 2px 6px;
+  word-break: break-all;
+}
+
+/* ---- Trust-class provenance label ---- */
+
+.provenance {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.04em;
+  color: var(--text-faint);
+  text-transform: uppercase;
+}

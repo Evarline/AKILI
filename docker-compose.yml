@@ -1,0 +1,34 @@
+# AKILI — local development infrastructure.
+#
+# PostgreSQL only. Redis is deferred and must not be added here yet. The backend
+# and frontend are not containerized — they run on the host during development.
+#
+# Values come from the .env file in this directory (copy it from .env.example).
+#
+# Port note: this maps to host port 5433, not 5432, because a separate
+# PostgreSQL may already own 5432 on the developer machine. Inside the container
+# Postgres still listens on 5432; only the host side moves.
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: akili-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-akili}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in your .env file}
+      POSTGRES_DB: ${POSTGRES_DB:-akili}
+    ports:
+      # Bound to localhost so the database is not exposed on the network.
+      - "127.0.0.1:${POSTGRES_PORT:-5433}:5432"
+    volumes:
+      - akili_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-akili} -d ${POSTGRES_DB:-akili}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+volumes:
+  akili_pgdata:

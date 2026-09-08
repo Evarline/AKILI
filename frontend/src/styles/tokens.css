@@ -1,0 +1,71 @@
+/*
+ * AKILI design tokens.
+ *
+ * Every colour below was sampled out of frontend/AKILI.png, so the surfaces,
+ * borders and accents are the reference's own values rather than an
+ * approximation of them. The identity is black / white / grey; green and red are
+ * semantic only (direction of a real price move, success, failure) and are never
+ * used decoratively. AKILI teal appears in exactly one place — the AKILI mark.
+ */
+
+:root {
+  /* ---- Surfaces (sampled: #040404 page, #0a0a0a card, #0f0f0f row, #171717 raised) */
+  --bg: #040404;
+  --surface: #0a0a0a;
+  --surface-raised: #0f0f0f;
+  --surface-high: #171717;
+  --surface-inset: #020202;
+
+  /* ---- Borders (sampled: #151516 rules, #2a2b2b card edges, #353536 rail cards) */
+  --divider: #151516;
+  --border: #2a2b2b;
+  --border-strong: #353536;
+  --border-focus: #6f7070;
+
+  /* ---- Text */
+  --text: #ffffff;
+  --text-secondary: #b4b4b2;
+  --text-muted: #8a8a88;
+  --text-faint: #5e5e5c;
+  --text-on-light: #050505;
+
+  /* ---- Semantic: direction of a real value, never decoration
+   * (sampled: #43d77f status dot, #52eb89 positive text, #f65d48 negative) */
+  --up: #43d77f;
+  --up-text: #5ed98a;
+  --down: #f65d48;
+  --down-text: #f37464;
+  --warn: #e6b45c;
+
+  /* ---- Brand: the AKILI mark only */
+  --akili-teal: #19b5a5;
+
+  /* ---- Type */
+  --font-sans: 'Inter Variable', 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: ui-monospace, 'SF Mono', 'JetBrains Mono', Menlo, monospace;
+
+  /* ---- Radii (sampled from the reference's card and control corners) */
+  --radius-sm: 8px;
+  --radius: 12px;
+  --radius-lg: 16px;
+  --radius-pill: 999px;
+
+  /* ---- Spacing */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+
+  /* ---- Elevation: restrained, as the reference is */
+  --shadow-card: 0 1px 2px rgb(0 0 0 / 60%);
+  --shadow-raised: 0 8px 24px -12px rgb(0 0 0 / 90%);
+
+  /* ---- Layout */
+  --header-height: 64px;
+  --sidebar-width: 288px;
+  --rail-width: 340px;
+  --content-max: 720px;
+}

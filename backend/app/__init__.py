@@ -1,0 +1,1 @@
+"""AKILI backend application package."""

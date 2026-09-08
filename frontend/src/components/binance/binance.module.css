@@ -1,0 +1,182 @@
+/* Binance connection: the header chip and the connection panel. */
+
+.headerStatus {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 6px 10px 6px 8px;
+  border-radius: var(--radius);
+  border: 1px solid transparent;
+  background: transparent;
+  text-align: left;
+  transition: background 120ms ease, border-color 120ms ease;
+}
+
+.headerStatus:hover {
+  background: var(--surface);
+  border-color: var(--border);
+}
+
+.headerIcon {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-sm);
+  display: grid;
+  place-items: center;
+  flex: none;
+  background: var(--surface-high);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+}
+
+.headerIcon img {
+  width: 17px;
+  height: 17px;
+  object-fit: contain;
+}
+
+.headerText {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.25;
+}
+
+.headerTitle {
+  font-size: 12.5px;
+  font-weight: 500;
+}
+
+.headerState {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex: none;
+  background: var(--text-faint);
+}
+
+.dotWarn {
+  background: var(--warn);
+}
+
+.dotOk {
+  background: var(--up);
+}
+
+.dotDown {
+  background: var(--down);
+}
+
+/* ---- Panel ---- */
+
+.panel {
+  padding-bottom: var(--space-2);
+}
+
+.available {
+  padding: 0 var(--space-5) var(--space-5);
+}
+
+.lead {
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+
+.connectButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  width: 100%;
+  margin-top: var(--space-4);
+  padding: 11px var(--space-4);
+  border-radius: var(--radius-sm);
+  background: var(--surface-high);
+  border: 1px solid #ffffff;
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 120ms ease;
+}
+
+.connectButton:hover {
+  background: var(--surface-raised);
+}
+
+.connectButton img {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+}
+
+.limitation {
+  display: flex;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+  padding: var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-high);
+}
+
+.limitationIcon {
+  flex: none;
+  margin-top: 2px;
+  color: var(--warn);
+}
+
+.limitationTitle {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.limitationBody {
+  margin-top: 3px;
+  font-size: 11.5px;
+  line-height: 1.55;
+  color: var(--text-muted);
+}
+
+.metadata {
+  margin: var(--space-4) 0 0;
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--divider);
+  display: grid;
+  gap: var(--space-2);
+}
+
+.metadataRow {
+  display: grid;
+  grid-template-columns: 74px 1fr;
+  gap: var(--space-3);
+  font-size: 11.5px;
+}
+
+.metadataRow dt {
+  color: var(--text-faint);
+}
+
+.metadataRow dd {
+  margin: 0;
+  color: var(--text-secondary);
+  overflow-wrap: anywhere;
+}
+
+.metadataMono {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+}
+
+.refreshRow {
+  margin-top: var(--space-3);
+}
