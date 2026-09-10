@@ -1,312 +1,340 @@
 # AKILI
 
-AKILI is a voice-first, human-in-the-loop AI agent for Binance Spot workflows.
-It is a Binance Agent OS hackathon project.
+AKILI is a conversational AI agent for Binance Spot market research and explanation.
+The current application can interpret a user's message, fetch selected Binance Spot
+market data, and explain that data. It is read-only: it does not place orders or
+perform other financial actions.
 
-## Human-in-the-loop architecture
+## What AKILI Currently Does
 
-An AI model reasons about the user's intent and produces a **structured proposal**.
-It is not the authority that executes anything. AKILI's backend owns validation and
-policy; a proposal is not user authorization; explicit human approval is required
-before any financial execution. Binance performs the execution, and AKILI verifies
-the result afterwards.
+- Provides a React + TypeScript chat interface.
+- Sends chat messages to a FastAPI backend for structured interpretation.
+- Answers conceptual questions and asks clarifying questions when needed.
+- Retrieves one Binance Spot market reading when a market question requires it.
+- Explains a ticker or recent candlestick data returned by Binance.
+- Shows the latest fetched reading and its observation time in the UI.
+- Persists users, conversations, messages, and agent runs in PostgreSQL.
+- Validates model output against strict Pydantic schemas before returning it.
+- Reports provider, database, Binance, and validation failures instead of fabricating a response.
 
-The agent loop:
+The frontend starts with an empty conversation. Its conversation sidebar contains
+only conversations created or opened during that browser session; there is no
+conversation-listing API yet.
 
-```
-UNDERSTAND → SEARCH → REASON → ASK → EXPLAIN → PLAN
-→ VALIDATE → PROPOSE → APPROVE → EXECUTE → VERIFY
-```
+## Current Implementation
 
-See [docs/architecture.md](docs/architecture.md) for the full set of architectural
-principles this repository is held to, and
-[docs/01-AGENT-CONTRACT.md](docs/01-AGENT-CONTRACT.md) for the normative agent
-contract: state machine, intents, proposal schema, approval, and policy rules.
+### Architecture
 
-## Target stack
-
-| Layer               | Choice                                  |
-| ------------------- | --------------------------------------- |
-| Backend             | Python + FastAPI                        |
-| Frontend            | React + TypeScript + Vite               |
-| Database            | PostgreSQL                              |
-| ORM / migrations    | SQLAlchemy + Alembic                    |
-| Binance integration | Binance Agent OS / MCP, behind an adapter |
-| Runtime AI          | Configurable LLM provider               |
-| Infrastructure      | Docker / Docker Compose                 |
-
-Redis is **deferred** and deliberately absent.
-
-## Status: Phase 5 — runtime AI integrated
-
-- **Phase 1 (done):** repository foundation.
-- **Phase 2 (done):** the agent contract in
-  [docs/01-AGENT-CONTRACT.md](docs/01-AGENT-CONTRACT.md) — specification only.
-- **Phase 3 (done):** a minimal FastAPI backend — typed configuration and a
-  health endpoint.
-- **Phase 4 (done):** PostgreSQL foundation — async SQLAlchemy, Alembic, and a
-  database health check.
-- **Phase 5 (done):** runtime AI. `POST /api/v1/chat` has a configurable LLM
-  interpret a user message into a **validated, structured interpretation**
-  (intent, clarification, extracted parameters). Conversations, messages, and
-  agent runs are persisted. The model reasons only — it executes nothing, sees
-  no credentials, and its output is treated as untrusted input.
-
-- **Identity foundation (done, development only):** a `users` table and a
-  `get_current_user` dependency. Every conversation is owned by one user and is
-  invisible to every other user. The only identity mode implemented is a
-  **development fixed user** that can only run with `APP_ENV=development` on a
-  loopback host; the default mode is `disabled`, where every protected route
-  answers 401. **This is not authentication** — it is the seam real
-  authentication will plug into, so that the coming Binance connection is owned
-  by a specific user from day one.
-
-- **Phase 6.2 (done): AKILI is a recognisable OAuth client.** AKILI serves its
-  own OAuth Client ID Metadata Document at `/.well-known/akili-mcp-client.json`
-  and `GET /api/v1/binance/connect` sends the signed-in user to Binance's
-  authorization endpoint with PKCE (S256), a persisted per-user `state`, and
-  the MCP `resource` indicator. AKILI is an **independent** public client: it
-  never uses any other application's Binance authorization. Off by default
-  (`BINANCE_OAUTH_ENABLED=false`).
-
-**Binance account access and MCP are intentionally NOT connected yet.** The
-OAuth callback, token exchange, token storage, and the first MCP call are
-Phase 6.3. The model is told it has no market, account, or symbol data and
-must not invent any; the backend rejects output that claims otherwise. Also
-still absent by design: real authentication (login, sessions), voice, approval
-and policy logic, trading execution, Redis, and the UI.
-
-## Repository layout
-
-```
-akili/
-├── backend/            Python + FastAPI service
-│   ├── requirements.txt
-│   ├── alembic.ini         Alembic settings (no credentials — see alembic/env.py)
-│   ├── alembic/versions/   Migrations
-│   └── app/
-│       ├── main.py         FastAPI app, health endpoints, error handlers
-│       ├── api/chat.py     POST /api/v1/chat
-│       ├── agent/          Contract schemas, system prompt, chat service
-│       ├── auth/           Identity foundation (development fixed user; NOT authentication)
-│       ├── oauth/          Provider-neutral OAuth 2.1 client pieces (discovery, PKCE, sealing)
-│       ├── binance/        Binance adapter boundary (authorization start)
-│       ├── llm/            Provider interface, Anthropic adapter, factory
-│       ├── core/config.py  Typed settings from the root .env
-│       └── db/             Engine/session, declarative base, ORM models
-├── frontend/           React + TypeScript + Vite app (not initialized yet)
-├── docs/
-│   ├── architecture.md         Phase 1 principles and stack
-│   └── 01-AGENT-CONTRACT.md    Phase 2 agent contract (normative)
-├── tests/backend/      Backend tests
-├── .env.example        Environment placeholders — copy to .env
-├── .gitignore
-├── docker-compose.yml  Local PostgreSQL for development
-├── pyproject.toml      pytest configuration only
-└── README.md
+```text
+User
+  |
+  v
+React + TypeScript + Vite frontend
+  |
+  v
+FastAPI backend
+  |
+  +--> Agent service and Pydantic contract validation
+  |       |
+  |       +--> Google Gemini HTTP provider
+  |       |
+  |       +--> Read-only market-data capability layer
+  |                    |
+  |                    v
+  |              Binance Spot REST API
+  |                    |
+  |                    v
+  |              Market facts returned to the agent and frontend
+  |
+  +--> Async SQLAlchemy -> PostgreSQL
 ```
 
-## Getting started
+The browser communicates with the AKILI backend only. In local development, Vite
+proxies `/api`, `/health`, and `/.well-known` to the backend. Binance credentials
+and LLM credentials remain server-side.
 
-Setup runs from the repository root: there is a **single** virtual environment
-at `.venv/` and a **single** `.env` file, both at the root. Each app is then run
-from inside its own folder — the backend from `backend/`, the frontend from
-`frontend/`.
+### Agent Workflow
 
-### 1. Environment variables
+The implemented workflow is deliberately small:
+
+| Stage | State | What is implemented |
+| --- | --- | --- |
+| Understand | Implemented | The model classifies the message and extracts only stated parameters. |
+| Research | Implemented | The backend may make one allow-listed ticker or kline read. |
+| Explain | Implemented | A second model call can answer from the fetched Binance facts. |
+| Plan | Not built | There is no trading plan or resolved order specification. |
+| Validate | Not built | There is no order validation or policy workflow. |
+| Approve | Not built | There is no user approval gate. |
+| Execute | Not built | No write capability or order endpoint exists. |
+| Verify | Not built | No execution-result verification exists. |
+
+The model requests market data, but the model does not call Binance directly.
+The backend validates the request, makes the read, labels the result as a Binance
+fact, and supplies it to the explanation turn. Model output remains advisory and
+is validated again before it is returned.
+
+## Binance Integration
+
+AKILI uses Binance Spot REST endpoints through `BinanceRESTProvider`.
+
+### Public market data
+
+The unauthenticated endpoints currently used are:
+
+- `GET /api/v3/ticker/24hr?symbol=...` for the last price, 24-hour change, high,
+  low, and volume.
+- `GET /api/v3/klines?symbol=...&interval=...&limit=...` for candlesticks.
+
+The supported kline intervals exposed by the agent are `1h`, `4h`, and `1d`.
+Kline requests are bounded to 24 candles by the capability layer. Symbols are
+normalized and validated before the request. These values come from Binance
+responses; they are not seeded or hardcoded application data. Each result includes
+an `observed_at` timestamp and is a point-in-time reading, not a live market feed.
+
+### Authenticated Spot account read
+
+The backend also implements a server-side, signed `GET /api/v3/account` request.
+It uses `BINANCE_API_KEY` and `BINANCE_API_SECRET` to return a restricted Spot
+account shape containing `account_type`, `can_trade`, and balances. The connection
+check invokes this read and reports whether the configured credentials work.
+
+This account path is implemented and covered by backend tests, but it requires
+valid server-side credentials and the development identity mode described below
+when called locally. The current chat capability allow-list does not expose
+account data to the model, and the current frontend does not display balances.
+
+No Binance write request is implemented. The backend contains no order, withdrawal,
+Futures, Margin, leverage, or transfer capability.
+
+### OAuth and MCP status
+
+There is partial Binance OAuth client infrastructure: when explicitly enabled,
+AKILI can publish a Client ID Metadata Document and redirect an authenticated
+request to Binance using PKCE. The callback, authorization-code exchange, token
+storage, and account access through that flow are not implemented.
+
+The active data path is REST. AKILI does not currently make MCP client calls. The
+MCP Python package is used by OAuth helper code, and MCP/OAuth configuration exists
+for the incomplete authorization path; this should not be interpreted as a
+working Binance MCP integration.
+
+## AI/LLM Integration
+
+The active configured provider is Google Gemini. The backend sends an HTTP request
+to the Google Generative Language API's `generateContent` endpoint and requests a
+JSON response matching the AKILI schema. The model name is supplied through
+`LLM_MODEL`; it is not hardcoded. `LLM_API_KEY`, `LLM_TIMEOUT_SECONDS`, and
+`LLM_MAX_OUTPUT_TOKENS` configure the request.
+
+The response is parsed as JSON and validated locally. Provider errors, empty or
+truncated responses, and schema violations become explicit API errors. Chat needs
+`LLM_MODEL` and `LLM_API_KEY`; without them the backend returns a configuration
+failure rather than using a fallback provider.
+
+An Anthropic adapter and its dependency remain in the repository, but the current
+settings and provider factory select Google. Anthropic is not the current runtime
+provider.
+
+## Technology Stack
+
+- Frontend: React 19, TypeScript, Vite, Vitest, Testing Library
+- Backend: Python, FastAPI, Uvicorn, Pydantic, pydantic-settings
+- LLM: Google Gemini via direct HTTP with `httpx2`
+- Binance: Binance Spot REST API
+- Database: PostgreSQL via async SQLAlchemy and `asyncpg`
+- Migrations: Alembic
+- Local database development: Docker Compose
+- Tests: pytest and Vitest
+
+## API
+
+The backend currently exposes these application routes:
+
+| Method | Path | Behavior |
+| --- | --- | --- |
+| `GET` | `/health` | Process health and application version. Does not require the database. |
+| `GET` | `/health/db` | Checks PostgreSQL with `SELECT 1`. |
+| `POST` | `/api/v1/chat` | Creates or continues an owned conversation and returns a validated interpretation, with optional Binance market facts. |
+| `GET` | `/api/v1/binance/connection` | Performs the configured signed Spot account read and returns safe connection metadata. |
+| `GET` | `/api/v1/binance/account` | Returns the restricted authenticated Spot account shape. |
+| `GET` | `/api/v1/binance/connect` | Optional OAuth start redirect; returns 404 unless Binance OAuth is enabled. |
+| `GET` | `/.well-known/akili-mcp-client.json` | Optional public OAuth client metadata; returns 404 unless Binance OAuth is enabled. |
+
+Protected routes require a current AKILI user. There is no login, session, or
+production authentication implementation.
+
+## Data & Persistence
+
+PostgreSQL is required for database-backed routes; there is no in-memory database
+fallback. SQLAlchemy uses its asynchronous PostgreSQL driver, and Alembic manages
+the schema.
+
+The current schema stores:
+
+- Users with an origin and status.
+- User-owned conversations.
+- User and assistant message text.
+- Agent runs, including status, provider/model, validated interpretation, token
+  counts, and an error class when a run fails.
+- Short-lived OAuth authorization requests, when the incomplete OAuth flow is used.
+
+Raw model responses, credentials, and raw Binance payloads are not stored by the
+agent run model. There is no persistence for proposals, approvals, orders, or
+execution results.
+
+## Security
+
+- LLM and Binance credentials are backend environment configuration only.
+- The frontend receives no API key, API secret, OAuth encryption key, or LLM key.
+- Binance API secrets are used only to sign the authenticated account request.
+- Model output is treated as untrusted input and rejected if it violates the
+  contract.
+- Market data is passed through an allow-listed capability layer and normalized
+  into typed domain models.
+- Development identity is a fixed seeded user and is permitted only with
+  `APP_ENV=development` and a loopback backend host. It is not authentication.
+
+## Current Limitations
+
+- No Binance order execution or trade execution.
+- No autonomous trading.
+- No Futures, Margin, leverage, withdrawals, transfers, or other write actions.
+- No approval or policy workflow.
+- No plan or execution-verification workflow.
+- No real user authentication, login, or sessions.
+- No completed OAuth callback, token exchange, or OAuth-based Binance account connection.
+- No operational Binance MCP client integration.
+- No live streaming market feed, market overview, gainers/losers list, or portfolio view.
+- Account reads exist behind signed REST credentials, but the chat agent does not
+  use them and the frontend does not show balances.
+- Chat depends on valid Gemini configuration and a reachable provider.
+
+## Local Development
+
+### Prerequisites
+
+- Python 3.13 or a compatible supported Python version
+- Node.js and npm
+- Docker with Compose, for local PostgreSQL
+
+### Configure the environment
+
+From the repository root:
 
 ```bash
-cp .env.example .env         # then fill in local values
+cp .env.example .env
 ```
 
-Set `POSTGRES_PASSWORD` to any local value, then put the same password into
-`DATABASE_URL` and `TEST_DATABASE_URL`. They must use the `postgresql+asyncpg://`
-scheme — the backend accesses the database asynchronously.
+Use local placeholder values like these. Never commit real credentials:
 
-For the runtime AI, set `LLM_PROVIDER` (currently `anthropic`), `LLM_MODEL` (a
-model ID from the provider's documentation — nothing is defaulted in code), and
-`LLM_API_KEY`. These are read by the **backend only**. The key is handed to the
-provider SDK client and is never part of a prompt, a log line, an error, or an
-API response; the frontend never receives it. While `LLM_API_KEY` is blank, the
-chat endpoint answers 503 "not configured" and everything else keeps working.
+```dotenv
+APP_ENV=development
+BACKEND_HOST=127.0.0.1
+AUTH_MODE=development_fixed_user
+DEV_FIXED_USER_ID=<uuid>
 
-The backend also starts without `.env`: application settings have development
-defaults, and the database URLs have **no** default. There is no silent fallback
-to another database — a missing `DATABASE_URL` makes `/health/db` return 503 and
-Alembic stop with a clear message, while `/health` keeps working. Secrets stay
-server-side; the frontend never receives them.
+POSTGRES_USER=akili
+POSTGRES_PASSWORD=<local-password>
+POSTGRES_DB=akili
+POSTGRES_PORT=5433
+DATABASE_URL=postgresql+asyncpg://akili:<url-encoded-password>@127.0.0.1:5433/akili
+TEST_DATABASE_URL=postgresql+asyncpg://akili:<url-encoded-password>@127.0.0.1:5433/akili_test
 
-### 2. Virtual environment
+LLM_PROVIDER=google
+LLM_MODEL=<gemini-model-id>
+LLM_API_KEY=<google-api-key>
 
-```bash
-python3 -m venv .venv                    # only if .venv does not exist yet
-source .venv/bin/activate                # Windows: .venv\Scripts\activate
+BINANCE_API_KEY=<read-only-spot-api-key>
+BINANCE_API_SECRET=<spot-api-secret>
+BINANCE_USE_TESTNET=false
 ```
 
-### 3. Install dependencies
+`AUTH_MODE=disabled` is the default and makes protected routes return `401`.
+With development fixed-user mode enabled, create the user after PostgreSQL and
+the schema are ready:
 
 ```bash
+python3 -m venv .venv
+source .venv/bin/activate
 pip install -r backend/requirements.txt
+docker compose up -d
+cd backend
+alembic upgrade head
+python -m app.auth.seed
 ```
 
-### 4. Start PostgreSQL
-
-AKILI stores its durable data in PostgreSQL. For local development it runs in
-Docker, bound to `127.0.0.1` only, with data kept in a named volume
-(`akili_pgdata`) so it survives container restarts.
-
-```bash
-docker compose up -d           # start (first run pulls the image)
-docker compose ps              # wait for "healthy"
-docker compose stop            # stop, keeping the data
-```
-
-It listens on host port **5433**, not the usual 5432, so it never collides with
-a PostgreSQL you may already have on this machine.
-
-Create the test database once (it is separate from the development database, so
-the test suite never touches development data):
+Create the separate test database once if running database tests:
 
 ```bash
 createdb -h 127.0.0.1 -p 5433 -U akili akili_test
 ```
 
-If Docker reports `Cannot connect to the Docker daemon`, your Docker CLI may be
-pointed at a Docker Desktop socket that is not running while the system daemon
-is. Check with `docker context ls`; `docker context use default` fixes it.
+### Run the backend
 
-### 5. Run the backend development server
-
-From inside the `backend/` folder:
+From `backend/`:
 
 ```bash
-cd backend
 uvicorn app.main:app --reload
 ```
 
-- Health check: <http://127.0.0.1:8000/health> → `{"status": "ok", "version": "0.1.0"}`
-- Database check: <http://127.0.0.1:8000/health/db> → `{"status": "ok", "database": "reachable"}`
-  (503 `Database unavailable` when PostgreSQL cannot be reached; never exposes
-  connection details)
-- Interactive API docs: <http://127.0.0.1:8000/docs>
+Useful URLs:
 
-The root `.env` is still picked up — the config resolves it from the source file
-location, not the working directory.
+- `http://127.0.0.1:8000/health`
+- `http://127.0.0.1:8000/health/db`
+- `http://127.0.0.1:8000/docs`
 
-**Enable the development identity** (needs PostgreSQL migrated). AKILI has no
-login yet; in development, every request is served as one fixed user. This is
-a development convenience with hard guards, **not authentication**:
-
-```bash
-# in the root .env
-AUTH_MODE=development_fixed_user
-DEV_FIXED_USER_ID=<a UUID you choose once, e.g. `uuidgen`>
-
-cd backend
-python -m app.auth.seed        # creates that user (idempotent)
-```
-
-With `AUTH_MODE=disabled` (the default) the chat endpoint answers
-`401 Not authenticated`. The fixed-user mode refuses to start unless
-`APP_ENV=development` and `BACKEND_HOST` is a loopback address, and no header
-or body field can select a different user.
-
-**Talk to the agent** (needs the identity above and an LLM key configured):
+Example chat request:
 
 ```bash
 curl -s http://127.0.0.1:8000/api/v1/chat \
   -H 'content-type: application/json' \
-  -d '{"message": "I have $20 and want to buy some Bitcoin."}'
+  -d '{"message":"What is the current price of BTC?"}'
 ```
 
-```json
-{
-  "conversation_id": "…",
-  "agent_run_id": "…",
-  "response": {
-    "intent": "BUY_SPOT",
-    "requires_clarification": false,
-    "message": "…",
-    "question": null,
-    "parameters": {"asset": "BTC", "quote_amount": "20", "quote_currency": "USD"},
-    "provenance": "MODEL_INTERPRETATION"
-  }
-}
-```
+### Run the frontend
 
-Pass the returned `conversation_id` in later requests to continue the
-conversation. Conversations belong to the user who started them; continuing
-someone else's is a 404, the same as an unknown id. Everything under
-`response` is the model's interpretation — it is
-a proposal for later phases to validate, never an action. Amounts are decimal
-strings. The asset is reported as the user named it; resolving it to a Binance
-symbol is a backend job for when Binance is connected. Failures are honest:
-provider problems are 503, an answer that fails the contract is 502, never a
-made-up 200.
-
-**Connect AKILI to Binance (Phase 6.2, optional).** Binance must be able to
-fetch AKILI's client metadata document over public HTTPS, so local development
-needs a stable HTTPS tunnel to the backend. Then, in the root `.env`:
+From `frontend/`:
 
 ```bash
-BINANCE_OAUTH_ENABLED=true
-BINANCE_MCP_SERVER_URL=https://agent.binance.com/mcp/agentic
-BINANCE_CIMD_URL=https://<your-tunnel-host>/.well-known/akili-mcp-client.json
-BINANCE_REDIRECT_URI=https://<your-tunnel-host>/api/v1/binance/oauth/callback
-OAUTH_ENCRYPTION_KEY=<python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())">
+npm install
+npm run dev
 ```
 
-Opening `/api/v1/binance/connect` in a browser redirects to Binance's
-authorization page. The callback that completes the flow does not exist yet;
-this step only proves Binance recognises AKILI as a client.
+Vite serves the UI on its configured development port, normally
+`http://127.0.0.1:5173`, and proxies backend paths to `http://127.0.0.1:8000`.
+Set `AKILI_BACKEND_URL` when the backend is running elsewhere.
 
-### 6. Database migrations (Alembic)
-
-Alembic is run from `backend/` and reads `DATABASE_URL` from the same settings
-the application uses. `alembic.ini` deliberately contains no URL, so no
-credentials are ever committed.
-
-```bash
-cd backend
-alembic current                # show the applied revision (proves connectivity)
-alembic upgrade head           # apply all migrations
-```
-
-Run `alembic upgrade head` once after cloning and after pulling new migrations.
-The current schema holds users, conversations (owned by a user), messages, and
-agent runs. Proposals, approvals, and executions are not modelled yet. If you
-already have conversations from before the `users` migration, set
-`DEV_FIXED_USER_ID` first: the migration assigns them to that development user
-rather than deleting them, and refuses to run (changing nothing) if it cannot. New migrations are generated
-with `alembic revision --autogenerate -m "describe the change"`, reviewed by
-hand, and checked with `alembic check` before being applied.
-
-### 7. Run the frontend development server
-
-Not initialized yet. When it is, it runs the same way, from inside its own
-folder (`cd frontend && npm run dev`), with `frontend/package.json` as its
-manifest.
-
-### 8. Run the tests
+### Run tests
 
 From the repository root:
 
 ```bash
 pytest
+cd frontend && npm test
 ```
 
-The tests are deterministic and need no network access and no LLM key: the
-model is replaced by a fake at the provider boundary, so the suite exercises
-AKILI's own behaviour — validation, persistence, failure handling, secret
-isolation. Database tests use `TEST_DATABASE_URL`, create their tables on the
-test database and drop them afterwards, and are skipped when the URL is not
-configured.
-
-One test talks to the real provider and is **off by default**; it costs money:
+The backend tests replace the LLM at the provider boundary for deterministic
+tests. The optional provider integration test is explicitly enabled with:
 
 ```bash
 AKILI_LLM_INTEGRATION=1 pytest tests/backend/test_llm_integration.py
 ```
 
-See [backend/README.md](backend/README.md) for the backend layout and
-[frontend/README.md](frontend/README.md) for what happens to the frontend next.
+## Project Status
+
+The repository contains a runnable frontend and backend foundation for
+conversation, market research, fact-grounded explanation, and read-only Spot
+account connectivity. Identity is development-only, and trading-related stages
+remain unimplemented.
+
+## Future Work
+
+Potential future capabilities, clearly separate from the current implementation,
+include:
+
+- Real user authentication and sessions.
+- Completing the Binance OAuth callback and token exchange.
+- Account-aware research in the agent workflow.
+- A plan, validation, and explicit approval gate.
+- Order execution followed by independent verification.
+- Additional Binance integrations and voice interaction.
